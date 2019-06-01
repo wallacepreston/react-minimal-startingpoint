@@ -42,13 +42,6 @@
             <p>{props.message}</p>
           </div>;
       
-      const Nav = ({ location, stories })=> {
-        return (
-          <div id='nav'>
-            <Link to='/' className={ location.pathname === '/' ? 'active': ''}>Home</Link>
-          </div>
-        );
-      };
       class App extends React.Component{
         constructor(){
           super();
