@@ -1,0 +1,135 @@
+<html>
+  <head>
+<style>
+  body {
+    font-family: sans-serif;
+    font-size: 1.5em;
+  }
+  #nav {
+    display: flex;
+  }
+  #nav a {
+    flex: 1;
+  }
+  #nav a.active{
+    text-decoration: none;
+  }
+  
+</style>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js'></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/react-router-dom/5.0.0/react-router-dom.js'></script>
+  </head>
+  <body>
+    <div id='root'></div>
+    <script type='text/babel'>
+      const { HashRouter, Link, Route } = ReactRouterDOM;
+      /*
+      const Story = ({ match, stories })=> {
+        const story = stories.find(story=> story.id === match.params.id*1); 
+        if(!story){
+          return null;
+        }
+        return (
+          <div>
+            <h2>{ story.title }</h2>
+            <div>
+              by {story.author.name }
+            </div>
+          </div>
+        );
+        
+      };
+      */
+      class Story extends React.Component{
+        constructor(){
+          super();
+          this.state = {
+            story: {}
+          };
+        }
+        async componentDidMount(){
+          const response = await axios.get(`https://fsa-readium.herokuapp.com/api/stories/${ this.props.match.params.id }`)
+          const story = response.data;
+          this.setState({ story });
+          /*
+            .then( response => response.data)
+            .then( stories => this.setState({ stories }));
+            */
+        }
+        render(){
+          const { story } = this.state;
+          if(!story.id){
+            return null;
+          }
+          return (
+            <div>
+              <h2>{ story.title }</h2>
+              <div>
+                { story.content }
+              </div>
+            </div>
+          );
+        }
+      }
+      const Home = ()=> <div>Home</div>;
+      const Stories = ({ stories })=> {
+        return (
+          <ul>
+          {
+            stories.map(story => (
+              <li key={ story.id }>
+                <Link to={`/stories/${story.id}`}>
+                  { story.title }
+                </Link>
+              </li>
+            ))
+          }
+          </ul>
+        );
+      };
+      const Nav = ({ location, stories })=> {
+        return (
+          <div id='nav'>
+            <Link to='/' className={ location.pathname === '/' ? 'active': ''}>Home</Link>
+            <Link to='/stories' className={ location.pathname === '/stories' ? 'active': ''}>Stories ({ stories.length })</Link>
+          </div>
+        );
+      };
+      class App extends React.Component{
+        constructor(){
+          super();
+          this.state = {
+            stories: []
+          };
+        }
+        async componentDidMount(){
+          const response = await axios.get('https://fsa-readium.herokuapp.com/api/stories')
+          const stories = response.data;
+          this.setState({ stories });
+          /*
+            .then( response => response.data)
+            .then( stories => this.setState({ stories }));
+            */
+        }
+        render(){
+          const { stories } = this.state;
+          return (
+            <HashRouter>
+              <div>
+                <Route render={(props)=> <Nav stories={ stories } location={ props.location }/> } />
+                <Route path='/' exact component={ Home } />
+                <Route path='/stories' exact render={ ()=><Stories stories={ stories }/>  } />
+                <Route path='/stories/:id' component={ Story }   />
+              </div>
+            </HashRouter>
+          );
+        }
+      }
+      const root = document.querySelector('#root');
+      ReactDOM.render(<App />, root);
+    </script>
+  </body>
+</html>
